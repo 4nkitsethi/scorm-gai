@@ -1,12 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Editor } from './components/Editor';
 import { CourseSettings } from './components/CourseSettings';
 import { Preview } from './components/Preview';
+import { ExportModal } from './components/ExportModal';
 import { useStore } from './store';
-import { exportSCORM12 } from './services/scormExporter';
-import { Globe, Package, Layout, Play, Save } from 'lucide-react';
+import { Globe, Package, Layout, Play, ChevronDown } from 'lucide-react';
 
 const App: React.FC = () => {
   const { 
@@ -17,60 +17,59 @@ const App: React.FC = () => {
     togglePreview
   } = useStore();
 
-  const handleExport = async () => {
-    try {
-      await exportSCORM12(course);
-    } catch (err) {
-      console.error("Export failed", err);
-      alert("Failed to export SCORM package. Check console for details.");
-    }
-  };
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className="flex flex-col h-screen overflow-hidden bg-slate-50">
       {/* Top Bar */}
-      <header className="h-16 border-b bg-white flex items-center justify-between px-6 z-10 shadow-sm shrink-0">
-        <div className="flex items-center space-x-4">
-          <div className="p-2 bg-blue-600 rounded-lg shadow-blue-200 shadow-lg">
+      <header className="h-20 bg-white/80 backdrop-blur-lg border-b border-slate-200 flex items-center justify-between px-8 z-40 shrink-0">
+        <div className="flex items-center space-x-5">
+          <div className="w-12 h-12 bg-indigo-600 rounded-2xl shadow-xl shadow-indigo-100 flex items-center justify-center transform hover:rotate-6 transition-transform">
              <Layout className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="font-bold text-slate-800 text-lg leading-tight">CourseBuilder</h1>
-            <p className="text-xs text-slate-400 font-medium">Professional Authoring Tool</p>
+            <h1 className="font-black text-slate-800 text-xl tracking-tight leading-none mb-1">AuthorCloud</h1>
+            <div className="flex items-center space-x-2">
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Active Draft</p>
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center space-x-6">
+        <div className="flex items-center space-x-8">
           {/* Language Selector */}
-          <div className="flex items-center space-x-2 bg-slate-50 p-1.5 rounded-lg border border-slate-200">
-            <Globe className="w-4 h-4 text-slate-400" />
-            <select 
-              className="bg-transparent text-sm font-semibold text-slate-700 outline-none pr-2 cursor-pointer"
-              value={currentLanguage}
-              onChange={(e) => setCurrentLanguage(e.target.value)}
-            >
-              {course.settings.languages.map(lang => (
-                <option key={lang.code} value={lang.code}>{lang.name}</option>
-              ))}
-            </select>
+          <div className="group relative">
+            <div className="flex items-center space-x-3 bg-slate-100 hover:bg-slate-200 px-4 py-2.5 rounded-2xl border border-slate-200 transition-all cursor-pointer">
+              <Globe className="w-4 h-4 text-slate-500" />
+              <select 
+                className="bg-transparent text-sm font-bold text-slate-700 outline-none cursor-pointer appearance-none pr-6"
+                value={currentLanguage}
+                onChange={(e) => setCurrentLanguage(e.target.value)}
+              >
+                {course.settings.languages.map(lang => (
+                  <option key={lang.code} value={lang.code}>{lang.name}</option>
+                ))}
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-4 pointer-events-none" />
+            </div>
           </div>
 
-          <div className="h-8 w-px bg-slate-200" />
+          <div className="h-10 w-px bg-slate-200" />
 
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-4">
             <button 
               onClick={() => togglePreview(true)}
-              className="flex items-center space-x-2 px-4 py-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-all rounded-lg font-bold text-sm"
+              className="group flex items-center space-x-2 px-6 py-3 text-slate-600 hover:text-indigo-600 transition-all rounded-2xl font-bold text-sm hover:bg-indigo-50"
             >
-              <Play className="w-4 h-4" />
+              <Play className="w-4 h-4 group-hover:fill-indigo-600 transition-all" />
               <span>Preview</span>
             </button>
             <button 
-              onClick={handleExport}
-              className="flex items-center space-x-2 px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-md shadow-blue-100 font-bold text-sm"
+              onClick={() => setIsExportModalOpen(true)}
+              className="flex items-center space-x-2 px-7 py-3 bg-slate-900 text-white rounded-2xl hover:bg-black transition-all shadow-2xl shadow-slate-200 font-bold text-sm"
             >
               <Package className="w-4 h-4" />
-              <span>Build SCORM</span>
+              <span>Publish</span>
             </button>
           </div>
         </div>
@@ -84,6 +83,7 @@ const App: React.FC = () => {
 
       <CourseSettings />
       <Preview />
+      <ExportModal isOpen={isExportModalOpen} onClose={() => setIsExportModalOpen(false)} />
     </div>
   );
 };
